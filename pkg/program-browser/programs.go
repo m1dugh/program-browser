@@ -8,7 +8,12 @@ import (
 )
 
 func GetPrograms() ([]*Program, error) {
-    requester := bugcrowd.NewBugcrowdRequester(5)
+
+    options := bugcrowd.DefaultOptions()
+    options.MaxPages = 1
+    options.FetchTargets = false
+
+    requester := bugcrowd.NewBugcrowdRequester(options)
 
     results, err := requester.GetPrograms()
     if err != nil {

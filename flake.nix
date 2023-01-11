@@ -23,6 +23,7 @@
             nativeBuildInputs = with pkgs; [
                 gnumake
                 go
+                jq
             ];
         };
     };

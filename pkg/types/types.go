@@ -96,25 +96,26 @@ func (scope *Scope) ExtractInfo() (*utils.StringSet, *utils.StringSet) {
 }
 
 type RequestThrottler struct {
-    MaxRequests uint
-    _requests uint
+    MaxRequests int
+    _requests int
     _lastFlush int64
     mut *sync.Mutex
 }
 
-func NewRequestThrottler(maxRequests uint) *RequestThrottler {
+func NewRequestThrottler(maxRequests int) *RequestThrottler {
     res := &RequestThrottler{
-        maxRequests,
-        0,
-        time.Now().UnixMicro(),
-        nil,
+        MaxRequests: maxRequests,
+        _requests: 0,
+        _lastFlush: time.Now().UnixMicro(),
+        mut: &sync.Mutex{},
     }
-    mut := &sync.Mutex{}
-    res.mut = mut
     return res
 }
 
 func (r *RequestThrottler) AskRequest() {
+    if r.MaxRequests < 0 {
+        return
+    }
     r.mut.Lock()
     defer r.mut.Unlock()
 

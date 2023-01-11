@@ -17,19 +17,31 @@ const ROOT_URL = `https://bugcrowd.com`
 const programsUrl = `%s/programs.json?sort[]=%s&hidden[]=%s&page[]=%d`
 
 type BugcrowdRequester struct {
-    throttler *types.RequestThrottler
+    throttler   *types.RequestThrottler
+    Options     *Options
 }
 
-func NewBugcrowdRequester(maxRequests uint) *BugcrowdRequester {
-    return &BugcrowdRequester{types.NewRequestThrottler(maxRequests)}
+func NewBugcrowdRequester(options *Options) *BugcrowdRequester {
+    if options == nil {
+        options = DefaultOptions();
+    }
+    return &BugcrowdRequester{
+        throttler: types.NewRequestThrottler(options.MaxRequests),
+        Options: options,
+    }
 }
 
-func GetUrl(sort string, hidden bool, page uint) string {
+func (requester *BugcrowdRequester) getURL(page uint) string {
     bflag := "false"
-    if hidden {
+    if requester.Options.Hidden {
         bflag = "true"
     }
-    return fmt.Sprintf(programsUrl, ROOT_URL, sort, bflag, page)
+    return fmt.Sprintf(programsUrl,
+        ROOT_URL,
+        requester.Options.Sort,
+        bflag,
+        page,
+    )
 }
 
 type BProgram struct {
@@ -100,7 +112,7 @@ type BResults struct {
     } `json:"meta"`
 }
 
-func (requester *BugcrowdRequester) getPrograms(url string) (*BResults, error) {
+func (requester *BugcrowdRequester) getProgramsForPage(url string) (*BResults, error) {
     requester.throttler.AskRequest()
     res, err := http.Get(url)
     
@@ -122,13 +134,13 @@ func (requester *BugcrowdRequester) getPrograms(url string) (*BResults, error) {
     return results, nil
 }
 
-func (requester *BugcrowdRequester) getProgramsWorker(url string,
+func (requester *BugcrowdRequester) getProgramsForPageWorker(url string,
 programs *[]*BProgram,
 mut *sync.Mutex,
 wg *sync.WaitGroup) {
     defer wg.Done()
 
-    results, err := requester.getPrograms(url)
+    results, err := requester.getProgramsForPage(url)
     if err != nil {
         return
     }
@@ -137,22 +149,24 @@ wg *sync.WaitGroup) {
     mut.Unlock()
 }
 
-func (requester *BugcrowdRequester) GetProgramList(sort string, hidden bool, pages int) ([]*BProgram, error) {
-    if pages == 0 {
+func (requester *BugcrowdRequester) getBProgramList() ([]*BProgram, error) {
+    if requester.Options.MaxPages == 0 {
         return nil, nil
     }
     var page uint = 1
     var programs []*BProgram
-    url := GetUrl(sort, hidden ,page)
-    results, err := requester.getPrograms(url)
+    url := requester.getURL(page)
+    results, err := requester.getProgramsForPage(url)
     if err != nil {
         return nil, errors.New(fmt.Sprintf("could not get program for %s", url))
     }
 
     pageCount := results.Meta.Pages
-    if pages > 0 && uint(pages) < pageCount {
-        pageCount = uint(pages)
+    if requester.Options.MaxPages > 0 &&
+        uint(requester.Options.MaxPages) < pageCount {
+        pageCount = uint(requester.Options.MaxPages)
     }
+
     programs = make([]*BProgram, 0, results.Meta.TotalHits)
     programs = append(programs, results.Programs...)
 
@@ -160,9 +174,9 @@ func (requester *BugcrowdRequester) GetProgramList(sort string, hidden bool, pag
     var wg sync.WaitGroup
 
     for page++;page <= pageCount;page++ {
-        url = GetUrl(sort, hidden, page)
+        url = requester.getURL(page)
         wg.Add(1)
-        go requester.getProgramsWorker(url, &programs, &mut, &wg)
+        go requester.getProgramsForPageWorker(url, &programs, &mut, &wg)
     }
 
     wg.Wait()
@@ -170,10 +184,10 @@ func (requester *BugcrowdRequester) GetProgramList(sort string, hidden bool, pag
     return programs,nil
 }
 
-func (requester *BugcrowdRequester) GetPartialPrograms(sort string, hidden bool, page int) ([]*types.Program, error) {
-    bprogs, err := requester.GetProgramList(sort, hidden, page)
+func (requester *BugcrowdRequester) getPrograms() ([]*types.Program, error) {
+    bprogs, err := requester.getBProgramList()
     if err != nil {
-        return nil, errors.New("GetPartialPrograms: An error occured while getting program list")
+        return nil, errors.New("getProgramsForPage: An error occured while getting program list")
     }
 
     var res []*types.Program = make([]*types.Program, len(bprogs))
@@ -206,7 +220,7 @@ func _escapeJSON(raw json.RawMessage) (json.RawMessage, error) {
     return []byte(str), nil
 }
 
-func (requester *BugcrowdRequester) GetTargetGroups(base_url string) ([]*BTargetGroup, error) {
+func (requester *BugcrowdRequester) getTargetGroups(base_url string) ([]*BTargetGroup, error) {
 
     client := &http.Client{}
     url := fmt.Sprintf("%s%s%s", ROOT_URL, base_url, base_target_url)
@@ -279,7 +293,7 @@ type bTargets struct {
     Targets []*BTarget `json:"targets"`
 }
 
-func (requester *BugcrowdRequester) GetTarget(url string) ([]*BTarget, error) {
+func (requester *BugcrowdRequester) getTarget(url string) ([]*BTarget, error) {
     
     client := &http.Client{}
     url = fmt.Sprintf("%s%s", ROOT_URL, url)
@@ -317,7 +331,7 @@ func (requester *BugcrowdRequester) GetTarget(url string) ([]*BTarget, error) {
 }
 
 func (requester *BugcrowdRequester) FetchTargets(p *types.Program) error {
-    groups, err := requester.GetTargetGroups(p.PlatformUrl)   
+    groups, err := requester.getTargetGroups(p.PlatformUrl)   
     if err != nil {
         return err
     }
@@ -325,7 +339,7 @@ func (requester *BugcrowdRequester) FetchTargets(p *types.Program) error {
     var targets []types.Target
 
     for _, g := range groups {
-        values, err := requester.GetTarget(g.Url)
+        values, err := requester.getTarget(g.Url)
         if err != nil {
             continue
         }
@@ -358,14 +372,16 @@ func (requester *BugcrowdRequester) FetchAllTargets(programs []*types.Program) {
 }
 
 func (requester *BugcrowdRequester) GetPrograms() ([]*types.Program, error) {
-    results, err := requester.GetPartialPrograms("starts-desc", false, -1)
+    results, err := requester.getPrograms()
     if err != nil {
         return nil, errors.New("BugcrowdRequested.GetPrograms: an error occured while fetching partial programs")
     } else if len(results) == 0 {
         return nil, errors.New("could not request programs")
     }
 
-    requester.FetchAllTargets(results)
+    if requester.Options.FetchTargets {
+        requester.FetchAllTargets(results)
+    }
 
     return results, nil
 }
