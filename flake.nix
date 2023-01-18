@@ -30,18 +30,31 @@
                 version = "0.0.1";
                 vendorHash = "sha256-pQpattmS9VmO3ZIQUFn66az8GSmB4IvYhTTCFn6SUmo=";
             };
+
+            subdomain-finder = pkgs.buildGoModule {
+                pname = "subdomain-finder";
+                src = ./.;
+                version = "0.0.1";
+                vendorHash = "sha256-pQpattmS9VmO3ZIQUFn66az8GSmB4IvYhTTCFn6SUmo=";
+            };
         });
 
         apps = forAllSystems(system:
         let
             pkgs = nixpkgsFor.${system};
             mypkgs = self.packages.${system};
-            inherit (mypkgs) program-browser;
+            inherit (mypkgs) program-browser subdomain-finder;
         in {
-            default = {
+            program-browser = {
                 type = "app";
                 program = "${program-browser}/bin/program-browser";
             };
+
+            subdomain-finder = {
+                type = "app";
+                program = "${subdomain-finder}/bin/subdomain-finder";
+            };
+            default = self.apps.${system}.program-browser;
         });
 
         devShells = forAllSystems(system: 
