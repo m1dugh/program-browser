@@ -10,7 +10,7 @@ import (
 
 func main() {
     boptions := bugcrowd.DefaultOptions()
-    boptions.MaxPrograms = 1
+    boptions.MaxPrograms = 4
     boptions.FetchTargets = true
     options := &programs.Options{
         Bugcrowd: true,
