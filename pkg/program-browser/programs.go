@@ -7,7 +7,23 @@ import (
     . "github.com/m1dugh/program-browser/pkg/types"
 )
 
-func GetPrograms() ([]*Program, error) {
+type Options struct {
+    
+}
+
+type ProgramBrowser struct {
+    requesters []*ProgramRequester
+    Options *Options
+}
+
+func New(options *Options) *ProgramBrowser {
+    return &ProgramBrowser{
+        Options: options,
+        requesters: nil,
+    }
+}
+
+func (browser *ProgramBrowser) GetPrograms() ([]*Program, error) {
 
     options := bugcrowd.DefaultOptions()
     options.MaxPages = 1

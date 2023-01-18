@@ -4,12 +4,13 @@ import (
     "fmt"
     "log"
     "encoding/json"
-    browser "github.com/m1dugh/program-browser/pkg/program-browser"
+    programs "github.com/m1dugh/program-browser/pkg/program-browser"
 )
 
 func main() {
-    fmt.Println("Hello, World!")
-    results, err := browser.GetPrograms();
+    browser := programs.New(nil);
+
+    results, err := browser.GetPrograms()
     if err != nil {
         log.Fatal(err)
     }

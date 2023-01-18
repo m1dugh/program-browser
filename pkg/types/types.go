@@ -37,6 +37,7 @@ type Program struct {
     SafeHarborStatus string `json:"safe_harbor_status"`
     Managed bool `json:"managed"`
     Started bool `json:"started"`
+    StartedAt time.Time `json:"started_at"`
     Ended bool `json:"ended"`
     Category string `json:"category"`
     MinReward uint `json:"min_reward"`
@@ -139,4 +140,6 @@ func (r *RequestThrottler) AskRequest() {
     }
 }
 
-
+type ProgramRequester interface {
+    GetPrograms() ([]*Program, error)
+}
