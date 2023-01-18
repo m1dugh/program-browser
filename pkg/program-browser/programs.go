@@ -1,43 +1,65 @@
 package programs
 
 import (
-    "fmt"
-    "errors"
-    "github.com/m1dugh/program-browser/internal/bugcrowd"
+    "github.com/m1dugh/program-browser/pkg/bugcrowd"
     . "github.com/m1dugh/program-browser/pkg/types"
+    "sync"
 )
 
 type Options struct {
-    
+    BugcrowdOptions *bugcrowd.Options   
+    Bugcrowd        bool
+}
+
+func DefaultOptions() *Options {
+    return &Options{
+        Bugcrowd: true,
+        BugcrowdOptions: nil,
+    }
 }
 
 type ProgramBrowser struct {
-    requesters []*ProgramRequester
+    requesters []ProgramRequester
     Options *Options
 }
 
 func New(options *Options) *ProgramBrowser {
+    if options == nil {
+        options = DefaultOptions()
+    }
+    requesters := make([]ProgramRequester, 0)
+
+    if options.Bugcrowd {
+        requesters = append(requesters, bugcrowd.New(options.BugcrowdOptions))
+    }
+
     return &ProgramBrowser{
         Options: options,
-        requesters: nil,
+        requesters: requesters,
     }
 }
 
 func (browser *ProgramBrowser) GetPrograms() ([]*Program, error) {
 
-    options := bugcrowd.DefaultOptions()
-    options.MaxPages = 1
-    options.FetchTargets = false
+    var results []*Program = make([]*Program, 0)
 
-    requester := bugcrowd.NewBugcrowdRequester(options)
+    var mut sync.Mutex
+    var wg sync.WaitGroup
+    for _, requester := range browser.requesters {
+        wg.Add(1)
+        go func(results *[]*Program, mut *sync.Mutex, wg *sync.WaitGroup) {
+            defer wg.Done()
+            programs, err := requester.GetPrograms()
+            if err != nil {
+                return
+            }
+            mut.Lock()
+            *results = append(*results, programs...)
+            mut.Unlock()
+        }(&results, &mut, &wg)
+    }
 
-    results, err := requester.GetPrograms()
-    if err != nil {
-        return nil, errors.New(fmt.Sprintf("GetPrograms: error while fetching bugcrowd programs: %s", err))
-    }
-    if len(results) == 0 {
-        return nil, errors.New(fmt.Sprintf("GetPrograms: could not find any programs"))
-    }
+    wg.Wait()
 
     return results, nil
 }

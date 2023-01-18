@@ -1,0 +1,6 @@
+# Editor files
+*.swp
+
+# build files
+results
+bin

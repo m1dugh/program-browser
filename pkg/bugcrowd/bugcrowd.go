@@ -21,7 +21,7 @@ type BugcrowdRequester struct {
     Options     *Options
 }
 
-func NewBugcrowdRequester(options *Options) *BugcrowdRequester {
+func New(options *Options) *BugcrowdRequester {
     if options == nil {
         options = DefaultOptions();
     }
@@ -150,7 +150,7 @@ wg *sync.WaitGroup) {
 }
 
 func (requester *BugcrowdRequester) getBProgramList() ([]*BProgram, error) {
-    if requester.Options.MaxPages == 0 {
+    if requester.Options.MaxPrograms == 0 {
         return nil, nil
     }
     var page uint = 1
@@ -162,10 +162,6 @@ func (requester *BugcrowdRequester) getBProgramList() ([]*BProgram, error) {
     }
 
     pageCount := results.Meta.Pages
-    if requester.Options.MaxPages > 0 &&
-        uint(requester.Options.MaxPages) < pageCount {
-        pageCount = uint(requester.Options.MaxPages)
-    }
 
     programs = make([]*BProgram, 0, results.Meta.TotalHits)
     programs = append(programs, results.Programs...)
@@ -190,10 +186,15 @@ func (requester *BugcrowdRequester) getPrograms() ([]*types.Program, error) {
         return nil, errors.New("getProgramsForPage: An error occured while getting program list")
     }
 
-    var res []*types.Program = make([]*types.Program, len(bprogs))
+    var length int
+    if len(bprogs) > requester.Options.MaxPrograms {
+        length = requester.Options.MaxPrograms
+    }
 
-    for i, v := range bprogs {
-        res[i] = v.ToProgram()
+    var res []*types.Program = make([]*types.Program, length)
+
+    for i := 0; i < length; i++{
+        res[i] = bprogs[i].ToProgram()
     }
 
     return res, nil
