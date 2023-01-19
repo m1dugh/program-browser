@@ -7,9 +7,10 @@ import (
 )
 
 type Options struct {
-    BugcrowdOptions *bugcrowd.Options   
-    Bugcrowd        bool
+    BugcrowdOptions *bugcrowd.Options   `yaml:"bugcrowd-options"`
+    Bugcrowd        bool                `yaml:"bugcrowd"`
 }
+
 
 func DefaultOptions() *Options {
     return &Options{

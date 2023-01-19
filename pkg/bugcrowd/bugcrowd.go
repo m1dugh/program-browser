@@ -186,14 +186,14 @@ func (requester *BugcrowdRequester) getPrograms() ([]*types.Program, error) {
         return nil, errors.New("getProgramsForPage: An error occured while getting program list")
     }
 
-    var length int
-    if len(bprogs) > requester.Options.MaxPrograms {
+    var length int = len(bprogs)
+    if requester.Options.MaxPrograms > 0 && length > requester.Options.MaxPrograms {
         length = requester.Options.MaxPrograms
     }
 
     var res []*types.Program = make([]*types.Program, length)
 
-    for i := 0; i < length; i++{
+    for i := 0; i < length; i++ {
         res[i] = bprogs[i].ToProgram()
     }
 
@@ -380,7 +380,7 @@ func (requester *BugcrowdRequester) GetPrograms() ([]*types.Program, error) {
         return nil, errors.New("could not request programs")
     }
 
-    if requester.Options.FetchTargets {
+    if !requester.Options.SkipScope {
         requester.FetchAllTargets(results)
     }
 

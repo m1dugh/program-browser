@@ -1,0 +1,4 @@
+bugcrowd: true
+bugcrowd-options: 
+  max-programs: 10
+  max-requests: 5

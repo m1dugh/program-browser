@@ -1,20 +1,27 @@
 package bugcrowd
 
+const (
+    DefaultSkipScope = false
+    DefaultMaxPrograms = -1
+    DefaultSort = "starts-desc"
+    DefaultMaxRequests = 5
+    DefaultHidden = false
+)
 
 type Options struct {
-    FetchTargets bool;
-    MaxPrograms int;
-    Sort string;
-    MaxRequests int;
-    Hidden bool;
+    SkipScope bool      `yaml:"skip-scope"`
+    MaxPrograms int     `yaml:"max-programs"`
+    Sort string         `yaml:"sort"`
+    MaxRequests int     `yaml:"max-requests"`
+    Hidden bool         `yaml:"hidden"`
 }
 
 func DefaultOptions() *Options {
     return &Options {
-        FetchTargets: true,
-        MaxPrograms: -1,
-        Sort: "starts-desc",
-        MaxRequests: 5,
-        Hidden: false,
+        SkipScope: DefaultSkipScope,
+        MaxPrograms: DefaultMaxPrograms,
+        Sort: DefaultSort,
+        MaxRequests: DefaultMaxRequests,
+        Hidden: DefaultHidden,
     }
 }
