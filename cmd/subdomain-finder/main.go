@@ -2,7 +2,7 @@ package main
 
 import (
     "github.com/m1dugh/program-browser/pkg/utils"
-    programs "github.com/m1dugh/program-browser/pkg/program-browser"
+    programs "github.com/m1dugh/program-browser/pkg/browser"
     "log"
     "regexp"
     "fmt"
