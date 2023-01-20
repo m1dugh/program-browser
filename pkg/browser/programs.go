@@ -1,4 +1,4 @@
-package programs
+package browser
 
 import (
     "github.com/m1dugh/program-browser/pkg/bugcrowd"

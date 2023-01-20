@@ -1,7 +1,7 @@
 package utils
 
 import (
-	programs "github.com/m1dugh/program-browser/pkg/program-browser"
+	programs "github.com/m1dugh/program-browser/pkg/browser"
 	yaml "gopkg.in/yaml.v3"
 )
 
