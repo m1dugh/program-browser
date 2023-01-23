@@ -304,6 +304,14 @@ func (s *Scope) InScope(url string) bool {
     return false
 }
 
+func wildcardToRegex(uri string) string {
+    uri = strings.ReplaceAll(uri, ".", "\\.")
+    uri = strings.ReplaceAll(uri, "*", ".*")
+    uri = strings.ReplaceAll(uri, ".*\\.", ".*\\.?")
+
+    return uri
+}
+
 func (p *Program) GetScope(category *regexp.Regexp) *Scope {
     res, _ := NewScope(make([]*ScopeEntry, 0), make([]*ScopeEntry, 0), true)
     for _, t := range p.Targets {
@@ -312,15 +320,11 @@ func (p *Program) GetScope(category *regexp.Regexp) *Scope {
         }
         if t.InScope {
             for _, uri := range t.URIs {
-                uri = strings.ReplaceAll(uri, ".", "\\.")
-                uri = strings.ReplaceAll(uri, "*", ".*")
-                res.AddSimpleRule(uri, true)
+                res.AddSimpleRule(wildcardToRegex(uri), true)
             }
         } else {
             for _, uri := range t.URIs {
-                uri = strings.ReplaceAll(uri, ".", "\\.")
-                uri = strings.ReplaceAll(uri, "*", ".*")
-                res.AddSimpleRule(uri, false)
+                res.AddSimpleRule(wildcardToRegex(uri), false)
             }
         }
     }

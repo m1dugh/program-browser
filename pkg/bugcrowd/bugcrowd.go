@@ -275,11 +275,13 @@ type BTarget struct {
 func (t *BTarget) ToTarget(inScope bool) *types.Target {
     res := &types.Target{}
     res.InScope = inScope
-    var uris []string = make([]string, 1)
-    if len(t.Uri) == 0 {
-        uris[0] = t.Name
-    } else {
-        uris[0] = t.Uri
+    var uris []string = make([]string, 0, 2)
+    // checks if the name is a domain name also
+    if !strings.Contains(t.Name, " ") && strings.Contains(t.Name, ".") {
+        uris = append(uris, t.Name)
+    }
+    if len(t.Uri) > 0 {
+        uris = append(uris, t.Uri)
     }
     res.URIs = uris
     res.Category = t.Category
