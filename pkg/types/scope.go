@@ -13,9 +13,9 @@ type ScopeEntry struct {
     Advanced bool       `json:"-"`
     Enabled bool        `json:"enabled"`
     Host string         `json:"host"`
-    Protocol string     `json:"protocol"`
-    File string         `json:"file"`
-    URL string          `json:"url"`
+    Protocol string     `json:"protocol,omitempty"`
+    File string         `json:"file,omitempty"`
+    URL string          `json:"url,omitempty"`
     hostReg *regexp.Regexp
     protocolReg *regexp.Regexp
     fileReg *regexp.Regexp
@@ -29,17 +29,20 @@ func (s *ScopeEntry) IsEnabled() bool {
 func (s *ScopeEntry) Setup(advanced bool) error {
     s.Advanced = advanced
     if advanced {
-        if len(s.Protocol) > 0 {
-            protocol := s.Protocol
-            if strings.ToLower(protocol) == "any" {
-                protocol = `^[a-z]{2,7}$`
-            }
-            reg, err := regexp.Compile(protocol)
-            if err != nil {
-                return err
-            }
-            s.protocolReg = reg
+        if len(s.Protocol) == 0 {
+            s.Protocol = "any"
         }
+
+        protocol := s.Protocol
+        if strings.ToLower(protocol) == "any" {
+            protocol = `^[a-z]{2,7}$`
+        }
+        reg, err := regexp.Compile(protocol)
+        if err != nil {
+            return err
+        }
+        s.protocolReg = reg
+
         if len(s.Host) > 0 {
             reg, err := regexp.Compile(s.Host)
             if err != nil {
@@ -243,9 +246,8 @@ func splitURL(url string) (string, string, string) {
     }
 
     host = splits[0]
-    file = "/"
     if len (splits) > 1 {
-        file += splits[1]
+        file = fmt.Sprintf("/%s", splits[1])
     }
 
     return host, protocol, file
@@ -255,7 +257,7 @@ func (s *Scope) AddSimpleRule(url string, in bool) error {
     var entry *ScopeEntry
     if s.Advanced {
         host, protocol, file := splitURL(url)
-        if file != "/" {
+        if len(file) > 0 {
             file = "^" + file
         }
         if len(protocol) > 0 {
@@ -287,6 +289,9 @@ func (s *Scope) InScope(url string) bool {
     host, protocol, file := splitURL(url)
     if len(protocol) == 0 {
         return false
+    }
+    if len(file) == 0 {
+        file = "/"
     }
 
     for _, entry := range s.Exclude {
