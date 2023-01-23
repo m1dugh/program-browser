@@ -14,7 +14,8 @@ import (
 
 const ROOT_URL = `https://bugcrowd.com`
 
-const programsUrl = `%s/programs.json?sort[]=%s&hidden[]=%s&page[]=%d`
+const programsUrl = ROOT_URL + `/programs.json?sort[]=%s&hidden[]=%s&page[]=%d`
+const programsSearchUrl = ROOT_URL + `/programs.json?sort[]=%s&hidden[]=%s&page[]=0&search[]=%s`
 
 type BugcrowdRequester struct {
     throttler   *types.RequestThrottler
@@ -37,10 +38,21 @@ func (requester *BugcrowdRequester) getURL(page uint) string {
         bflag = "true"
     }
     return fmt.Sprintf(programsUrl,
-        ROOT_URL,
         requester.Options.Sort,
         bflag,
         page,
+    )
+}
+
+func (requester *BugcrowdRequester) getSearchURL(query string) string {
+    bflag := "false"
+    if requester.Options.Hidden {
+        bflag = "true"
+    }
+    return fmt.Sprintf(programsSearchUrl,
+        requester.Options.Sort,
+        bflag,
+        query,
     )
 }
 
@@ -180,6 +192,41 @@ func (requester *BugcrowdRequester) getBProgramList() ([]*BProgram, error) {
     return programs,nil
 }
 
+func (requester *BugcrowdRequester) searchBPrograms(query string) ([]*BProgram, error) {
+
+    if requester.Options.MaxPrograms == 0 {
+        return nil, nil
+    }
+    url := requester.getSearchURL(query)
+    results, err := requester.getProgramsForPage(url)
+    if err != nil {
+        return nil, errors.New(fmt.Sprintf("could not get program for %s", url))
+    }
+
+    return results.Programs,nil
+}
+
+func (requester *BugcrowdRequester) searchPrograms(query string) ([]*types.Program, error) {
+
+    bprogs, err := requester.searchBPrograms(query)
+    if err != nil {
+        return nil, errors.New("getProgramsForPage: An error occured while getting program list")
+    }
+
+    var length int = len(bprogs)
+    if requester.Options.MaxPrograms > 0 && length > requester.Options.MaxPrograms {
+        length = requester.Options.MaxPrograms
+    }
+
+    var res []*types.Program = make([]*types.Program, length)
+
+    for i := 0; i < length; i++ {
+        res[i] = bprogs[i].ToProgram()
+    }
+
+    return res, nil
+}
+
 func (requester *BugcrowdRequester) getPrograms() ([]*types.Program, error) {
     bprogs, err := requester.getBProgramList()
     if err != nil {
@@ -311,7 +358,7 @@ type bTargets struct {
 }
 
 func (requester *BugcrowdRequester) getTarget(url string) ([]*BTarget, error) {
-    
+
     client := &http.Client{}
     url = fmt.Sprintf("%s%s", ROOT_URL, url)
     requester.throttler.AskRequest()
@@ -352,7 +399,7 @@ func (requester *BugcrowdRequester) FetchTargets(p *types.Program) error {
     if err != nil {
         return err
     }
-    
+
     var targets []types.Target
 
     for _, g := range groups {
@@ -392,6 +439,22 @@ func (requester *BugcrowdRequester) GetPrograms() ([]*types.Program, error) {
     results, err := requester.getPrograms()
     if err != nil {
         return nil, errors.New("BugcrowdRequested.GetPrograms: an error occured while fetching partial programs")
+    } else if len(results) == 0 {
+        return nil, errors.New("could not request programs")
+    }
+
+    if !requester.Options.SkipScope {
+        requester.FetchAllTargets(results)
+    }
+
+    return results, nil
+}
+
+func (requester *BugcrowdRequester) SearchPrograms(name string) ([]*types.Program, error) {
+
+    results, err := requester.searchPrograms(name)
+    if err != nil {
+        return nil, errors.New("BugcrowdRequested.SearchPrograms: an error occured while fetching partial programs")
     } else if len(results) == 0 {
         return nil, errors.New("could not request programs")
     }

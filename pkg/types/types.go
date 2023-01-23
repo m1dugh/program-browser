@@ -107,4 +107,5 @@ func (r *RequestThrottler) AskRequest() {
 
 type ProgramRequester interface {
     GetPrograms() ([]*Program, error)
+    SearchPrograms(name string) ([]*Program, error)
 }
