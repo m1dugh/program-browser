@@ -4,3 +4,5 @@
 # build files
 results
 bin
+
+dist/
