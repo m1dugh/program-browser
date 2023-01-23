@@ -9,6 +9,7 @@ import (
 	"os"
 
 	programs "github.com/m1dugh/program-browser/pkg/browser"
+	"github.com/m1dugh/program-browser/pkg/types"
 	"github.com/m1dugh/program-browser/pkg/utils"
 )
 
@@ -16,7 +17,11 @@ func main() {
     var settingsPath string
     flag.StringVar(&settingsPath, "settings", "", "The path to the settings.yaml file")
 
+    var query string
+    flag.StringVar(&query, "search", "", "The search term for a program")
+
     flag.Parse()
+    var err error
 
     var options *programs.Options
     if len(settingsPath) == 0 {
@@ -36,9 +41,15 @@ func main() {
 
     }
 
+    var results []*types.Program
+    err = nil
     browser := programs.New(options);
+    if len(query) > 0 {
+        results, err = browser.SearchPrograms(query)
+    } else {
+        results, err = browser.GetPrograms()
+    }
 
-    results, err := browser.GetPrograms()
     if err != nil {
         log.Fatal(err)
     }

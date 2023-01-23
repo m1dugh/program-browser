@@ -455,11 +455,9 @@ func (requester *BugcrowdRequester) SearchPrograms(name string) ([]*types.Progra
     results, err := requester.searchPrograms(name)
     if err != nil {
         return nil, errors.New("BugcrowdRequested.SearchPrograms: an error occured while fetching partial programs")
-    } else if len(results) == 0 {
-        return nil, errors.New("could not request programs")
     }
 
-    if !requester.Options.SkipScope {
+    if len(results) > 0 && !requester.Options.SkipScope {
         requester.FetchAllTargets(results)
     }
 

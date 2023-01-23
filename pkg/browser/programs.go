@@ -48,7 +48,7 @@ func (browser *ProgramBrowser) GetPrograms() ([]*Program, error) {
     var wg sync.WaitGroup
     for _, requester := range browser.requesters {
         wg.Add(1)
-        go func(results *[]*Program, mut *sync.Mutex, wg *sync.WaitGroup) {
+        go func(results *[]*Program, mut *sync.Mutex, wg *sync.WaitGroup, requester ProgramRequester) {
             defer wg.Done()
             programs, err := requester.GetPrograms()
             if err != nil {
@@ -57,11 +57,37 @@ func (browser *ProgramBrowser) GetPrograms() ([]*Program, error) {
             mut.Lock()
             *results = append(*results, programs...)
             mut.Unlock()
-        }(&results, &mut, &wg)
+        }(&results, &mut, &wg, requester)
     }
 
     wg.Wait()
 
     return results, nil
 }
+
+func (browser *ProgramBrowser) SearchPrograms(query string) ([]*Program, error) {
+
+    var results []*Program = make([]*Program, 0)
+
+    var mut sync.Mutex
+    var wg sync.WaitGroup
+    for _, requester := range browser.requesters {
+        wg.Add(1)
+        go func(results *[]*Program, mut *sync.Mutex, wg *sync.WaitGroup, requester ProgramRequester) {
+            defer wg.Done()
+            programs, err := requester.SearchPrograms(query)
+            if err != nil {
+                return
+            }
+            mut.Lock()
+            *results = append(*results, programs...)
+            mut.Unlock()
+        }(&results, &mut, &wg, requester)
+    }
+
+    wg.Wait()
+
+    return results, nil
+}
+
 
