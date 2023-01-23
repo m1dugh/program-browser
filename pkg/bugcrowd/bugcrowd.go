@@ -259,7 +259,7 @@ func (requester *BugcrowdRequester) getTargetGroups(base_url string) ([]*BTarget
     return groups.Groups, nil
 }
 
-type _target_tags struct {
+type btargetTags struct {
     Tags    []struct {
         Name string `json:"name"`
     } `json:"tags"`
@@ -269,7 +269,7 @@ type BTarget struct {
     Name string `json:"name"`
     Uri  string `json:"uri"`
     Category string `json:"category"`
-    target  _target_tags `json:"target"`
+    Target  btargetTags `json:"target"`
 }
 
 func (t *BTarget) ToTarget(inScope bool) *types.Target {
@@ -285,8 +285,8 @@ func (t *BTarget) ToTarget(inScope bool) *types.Target {
     }
     res.URIs = uris
     res.Category = t.Category
-    res.Tags = make([]string, len(t.target.Tags))
-    for i, v := range t.target.Tags {
+    res.Tags = make([]string, len(t.Target.Tags))
+    for i, v := range t.Target.Tags {
         res.Tags[i] = v.Name
     }
     return res

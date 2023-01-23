@@ -12,7 +12,7 @@ import (
 type ScopeEntry struct {
     Advanced bool       `json:"-"`
     Enabled bool        `json:"enabled"`
-    Host string         `json:"host"`
+    Host string         `json:"host,omitempty"`
     Protocol string     `json:"protocol,omitempty"`
     File string         `json:"file,omitempty"`
     URL string          `json:"url,omitempty"`
