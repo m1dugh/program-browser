@@ -1,17 +1,16 @@
 package main
 
 import (
-    "github.com/m1dugh/program-browser/pkg/utils"
-    programs "github.com/m1dugh/program-browser/pkg/browser"
-    "log"
-    "regexp"
-    "fmt"
-    "flag"
-    "os"
-    "errors"
-)
+	"errors"
+	"flag"
+	"fmt"
+	"log"
+	"os"
 
-var webRegexp = regexp.MustCompile("[Ww]ebsite")
+	programs "github.com/m1dugh/program-browser/pkg/browser"
+	"github.com/m1dugh/program-browser/pkg/types"
+	"github.com/m1dugh/program-browser/pkg/utils"
+)
 
 func main() {
 
@@ -46,7 +45,7 @@ func main() {
     }
 
     for _, program := range results {
-        scope := program.GetScope(webRegexp)
+        scope := program.GetScope(types.Website, types.API)
         _, domains := scope.ExtractInfo()
         for _, domain := range domains.ToArray() {
             fmt.Println(domain)

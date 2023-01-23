@@ -19,11 +19,23 @@ const (
     Safe            = "safe"
 )
 
+type TargetCategory string
+
+const (
+    Website TargetCategory  = "website"
+    API                     = "api"
+    GitHub                  = "GitHub"
+    SocialMedias            = "social medias"
+    IOS                     = "IOS"
+    Android                 = "Android"
+    Others                  = "others"
+)
+
 type Target struct {
-    InScope bool `json:"in_scope"`
-    URIs []string`json:"uris"`
-    Category string `json:"category"`
-    Tags []string   `json:"tags"`
+    InScope     bool            `json:"in_scope"`
+    URIs        []string        `json:"uris"`
+    Category    TargetCategory  `json:"category"`
+    Tags        []string        `json:"tags"`
 }
 
 type Program struct {

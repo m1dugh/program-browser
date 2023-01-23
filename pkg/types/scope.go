@@ -317,10 +317,17 @@ func wildcardToRegex(uri string) string {
     return uri
 }
 
-func (p *Program) GetScope(category *regexp.Regexp) *Scope {
+func (p *Program) GetScope(categories... TargetCategory) *Scope {
     res, _ := NewScope(make([]*ScopeEntry, 0), make([]*ScopeEntry, 0), true)
     for _, t := range p.Targets {
-        if category != nil && !category.MatchString(t.Category) {
+        valid := false
+        for _, c := range categories {
+            if t.Category == c {
+                valid = true
+                break
+            }
+        }
+        if !valid {
             continue
         }
         if t.InScope {

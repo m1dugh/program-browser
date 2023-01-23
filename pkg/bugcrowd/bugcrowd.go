@@ -284,11 +284,25 @@ func (t *BTarget) ToTarget(inScope bool) *types.Target {
         uris = append(uris, t.Uri)
     }
     res.URIs = uris
-    res.Category = t.Category
+    var category types.TargetCategory = types.Others
     res.Tags = make([]string, len(t.Target.Tags))
     for i, v := range t.Target.Tags {
+        name := strings.ToLower(v.Name)
+        if strings.Contains(name, "website testing") || strings.Contains(name, "wordpress") {
+            category = types.Website
+        } else if strings.Contains(name, "api testing") {
+            category = types.API
+        } else if strings.Contains(name, "github") {
+            category = types.GitHub
+        } else if strings.Contains(name, "ios") {
+            category = types.IOS
+        } else if strings.Contains(name, "android") {
+            category = types.Android
+        }
         res.Tags[i] = v.Name
     }
+
+    res.Category = category
     return res
 }
 
