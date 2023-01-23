@@ -10,7 +10,7 @@ import (
 )
 
 type ScopeEntry struct {
-    Advanced bool
+    Advanced bool       `json:"-"`
     Enabled bool        `json:"enabled"`
     Host string         `json:"host"`
     Protocol string     `json:"protocol"`
@@ -30,10 +30,11 @@ func (s *ScopeEntry) Setup(advanced bool) error {
     s.Advanced = advanced
     if advanced {
         if len(s.Protocol) > 0 {
-            if strings.ToLower(s.Protocol) == "any" {
-                s.Protocol = `^[a-z]{2,7}$`
+            protocol := s.Protocol
+            if strings.ToLower(protocol) == "any" {
+                protocol = `^[a-z]{2,7}$`
             }
-            reg, err := regexp.Compile(s.Protocol)
+            reg, err := regexp.Compile(protocol)
             if err != nil {
                 return err
             }
@@ -147,11 +148,13 @@ func NewSimpleScope(include []string, exclude []string) (*Scope, error) {
     return scope, err
 }
 
-type burpScope struct {
+type burpTarget struct {
     Scope *Scope `json:"scope"`
-    Target *struct{
-        Scope *Scope `json:"scope"`
-    } `json:"target"`
+}
+
+type burpScope struct {
+    Scope   *Scope      `json:"scope,omitempty"`
+    Target  *burpTarget `json:"target"`
 }
 
 func (s *Scope) setup() error {
@@ -325,24 +328,24 @@ func (p *Program) GetScope(category *regexp.Regexp) *Scope {
     return res
 }
 
-/*/// returns a list of bytes representing the Burp Suite corresponding
+/// returns a list of bytes representing the Burp Suite corresponding
 /// scope
 func (s *Scope) ToBurpScope() ([]byte, error) {
+    target := &burpTarget{
+        Scope: s,
+    }
+
     burpScope := burpScope{
-        Target: struct{
-            Scope: *Scope
-        }{
-            Scope: s,
-        };
+        Target: target,
     };
 
-    body, err := json.MarshalIndent(burpScope)
+    body, err := json.MarshalIndent(burpScope, "", "\t")
     if err != nil {
         return nil, err
     }
     return body, nil
 
-}*/
+}
 
 /// Returns a StringSet of urls and a StringSet of Subdomains
 func (scope *Scope) ExtractInfo() (*utils.StringSet, *utils.StringSet) {
