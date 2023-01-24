@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
     "errors"
-    "github.com/m1dugh/program-browser/internal/utils"
+    "github.com/m1dugh-security/tools/go/utils/pkg/utils"
 )
 
 type ScopeEntry struct {

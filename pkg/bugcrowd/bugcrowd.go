@@ -10,6 +10,7 @@ import (
     "strconv"
     "strings"
     "github.com/m1dugh/program-browser/pkg/types"
+    "github.com/m1dugh-security/tools/go/utils/pkg/utils"
 )
 
 const ROOT_URL = `https://bugcrowd.com`
@@ -18,7 +19,7 @@ const programsUrl = ROOT_URL + `/programs.json?sort[]=%s&hidden[]=%s&page[]=%d`
 const programsSearchUrl = ROOT_URL + `/programs.json?sort[]=%s&hidden[]=%s&page[]=0&search[]=%s`
 
 type BugcrowdRequester struct {
-    throttler   *types.RequestThrottler
+    throttler   *utils.RequestThrottler
     Options     *Options
 }
 
@@ -27,7 +28,7 @@ func New(options *Options) *BugcrowdRequester {
         options = DefaultOptions();
     }
     return &BugcrowdRequester{
-        throttler: types.NewRequestThrottler(options.MaxRequests),
+        throttler: utils.NewRequestThrottler(options.MaxRequests),
         Options: options,
     }
 }
