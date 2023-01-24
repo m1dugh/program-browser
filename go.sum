@@ -1,3 +1,7 @@
+github.com/m1dugh-security/tools/go/utils v0.0.0-20230124163947-c8817b4a746e h1:tZeefxSKFw2cNVriYhd8RK+ChocT2OrIfxm3dv5M688=
+github.com/m1dugh-security/tools/go/utils v0.0.0-20230124163947-c8817b4a746e/go.mod h1:xCrLJ5893CDM2kdRcOXE030GY/Vhn6bkzQFYmbPY13Y=
+github.com/m1dugh-security/tools/go/utils v0.0.0-20230124173235-3d676e33bdf0 h1:m0bojw5M/9mk7v38fxBiht3uxbOqJ1vKFNozt/wENJw=
+github.com/m1dugh-security/tools/go/utils v0.0.0-20230124173235-3d676e33bdf0/go.mod h1:xCrLJ5893CDM2kdRcOXE030GY/Vhn6bkzQFYmbPY13Y=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
