@@ -365,8 +365,8 @@ func (s *Scope) ToBurpScope() ([]byte, error) {
 
 /// Returns a StringSet of urls and a StringSet of Subdomains
 func (scope *Scope) ExtractInfo() (*utils.StringSet, *utils.StringSet) {
-    urls := utils.NewStringSet(nil)
-    subdomains := utils.NewStringSet(nil)
+    urls := utils.NewStringSet()
+    subdomains := utils.NewStringSet()
 
     for _, s := range scope.Include {
         url := utils.URLMatcher.FindString(s.ToURL())
