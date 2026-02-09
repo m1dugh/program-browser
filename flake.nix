@@ -1,73 +1,40 @@
 {
-    description = "A golang package to fetch all programs from divers bug bounty platforms";
+  description = "A very basic flake";
 
-    inputs = {
-        nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    systems.url = "github:nix-systems/default";
+    flake-utils = {
+      url = "github:numtide/flake-utils";
+      inputs.systems.follows = "systems";
     };
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+    };
+  };
 
-    outputs = {
-        self,
-        nixpkgs
-    }:
+  outputs =
+    { self
+    , nixpkgs
+    , flake-utils
+    , treefmt-nix
+    , ...
+    }: flake-utils.lib.eachDefaultSystem (system:
     let
-        name = "program-browser";
-        inherit (nixpkgs) lib;
-        supportedSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-linux" "aarch64-linux" ];
-        forAllSystems = lib.genAttrs supportedSystems;
-        nixpkgsFor = forAllSystems(system: import nixpkgs {
-            config.allowUnfree = true;
-            inherit system;
-        });
-    in {
+      pkgs = import nixpkgs {
+        inherit system;
+      };
+      treefmt = treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
+    in
+    {
+      packages = { };
 
-        packages = forAllSystems(system: 
-        let
-            pkgs = nixpkgsFor.${system};
-        in {
-            program-browser = pkgs.buildGoModule {
-                pname = "program-browser";
-                src = ./.;
-                version = "0.0.1";
-                vendorHash = "sha256-pQpattmS9VmO3ZIQUFn66az8GSmB4IvYhTTCFn6SUmo=";
-            };
+      formatter = treefmt.config.build.wrapper;
 
-            subdomain-finder = pkgs.buildGoModule {
-                pname = "subdomain-finder";
-                src = ./.;
-                version = "0.0.1";
-                vendorHash = "sha256-pQpattmS9VmO3ZIQUFn66az8GSmB4IvYhTTCFn6SUmo=";
-            };
-        });
-
-        apps = forAllSystems(system:
-        let
-            pkgs = nixpkgsFor.${system};
-            mypkgs = self.packages.${system};
-            inherit (mypkgs) program-browser subdomain-finder;
-        in {
-            program-browser = {
-                type = "app";
-                program = "${program-browser}/bin/program-browser";
-            };
-
-            subdomain-finder = {
-                type = "app";
-                program = "${subdomain-finder}/bin/subdomain-finder";
-            };
-            default = self.apps.${system}.program-browser;
-        });
-
-        devShells = forAllSystems(system: 
-        let
-            pkgs = nixpkgsFor.${system};
-        in {
-            default = pkgs.mkShell {
-                nativeBuildInputs = with pkgs; [
-                    gnumake
-                    go
-                    jq
-                ];
-            };
-        });
-    };
+      devShells.default = pkgs.mkShell {
+        nativeBuildInputs = with pkgs; [
+          go
+        ];
+      };
+    });
 }
