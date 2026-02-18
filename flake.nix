@@ -31,7 +31,7 @@
       packages = {
         default = self.outputs.packages.${system}.program-browser;
 
-        program-browser = pkgs.callPackage ./nix/default.nix {};
+        program-browser = pkgs.callPackage ./nix/default.nix { };
       };
 
       formatter = treefmt.config.build.wrapper;

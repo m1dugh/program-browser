@@ -7,14 +7,14 @@ import (
 type Scheme string
 
 type Host struct {
-	Suffix string `json:"prefix"`
-	Wildcard bool `json:"wildcard"`
+	Suffix   string `json:"prefix"`
+	Wildcard bool   `json:"wildcard"`
 }
 
 type Endpoint struct {
 	Scheme *string `json:"scheme"`
-	Host Host `json:"host"`
-	Path *string `json:"path,omitempty"`
+	Host   Host    `json:"host"`
+	Path   *string `json:"path,omitempty"`
 }
 
 func NewEndpointFromString(s string) Endpoint {
@@ -23,13 +23,13 @@ func NewEndpointFromString(s string) Endpoint {
 	if index != -1 {
 		protocol := s[:index]
 		res.Scheme = &protocol
-		s = s[index + 3:]
+		s = s[index+3:]
 	}
 
 	index = strings.Index(s, "/")
 
 	if index != -1 {
-		path := s[index + 1:]
+		path := s[index+1:]
 		res.Path = &path
 		s = s[:index]
 	}
@@ -49,7 +49,7 @@ func (ep *Endpoint) CompatibleWith(pattern *Endpoint) bool {
 	}
 
 	if pattern.Host.Wildcard {
-		if ! strings.HasSuffix(ep.Host.Suffix, pattern.Host.Suffix) {
+		if !strings.HasSuffix(ep.Host.Suffix, pattern.Host.Suffix) {
 			return false
 		}
 	} else {
@@ -59,7 +59,7 @@ func (ep *Endpoint) CompatibleWith(pattern *Endpoint) bool {
 	}
 
 	if pattern.Path != nil {
-		if ep.Path == nil || ! strings.HasPrefix(*ep.Path, *pattern.Path) {
+		if ep.Path == nil || !strings.HasPrefix(*ep.Path, *pattern.Path) {
 			return false
 		}
 	}
@@ -85,13 +85,13 @@ func (ep *Endpoint) ToString() string {
 
 type Scope struct {
 	AllowedEndpoints []Endpoint `json:"allowedEndpoints"`
-	DeniedEndpoints []Endpoint `json:"deniedEndpoints"`
+	DeniedEndpoints  []Endpoint `json:"deniedEndpoints"`
 }
 
 type Program struct {
-	Platform string `json:"platform"`
+	Platform   string `json:"platform"`
 	PlatformId string `json:"platformId"`
-	Scope Scope `json:"scope"`
-	Name string `json:"name"`
-	URL string `json:"URL"`
+	Scope      Scope  `json:"scope"`
+	Name       string `json:"name"`
+	URL        string `json:"URL"`
 }

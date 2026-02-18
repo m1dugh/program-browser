@@ -16,13 +16,13 @@ import (
 const platform string = "bugcrowd"
 
 type BugcrowdApi struct {
-	client *http.Client
+	client  *http.Client
 	baseURL string
 }
 
 func NewBugcrowdApi() *BugcrowdApi {
 	return &BugcrowdApi{
-		client: &http.Client{},
+		client:  &http.Client{},
 		baseURL: "https://bugcrowd.com",
 	}
 }
@@ -95,7 +95,7 @@ func (api *BugcrowdApi) fetchPrograms() (chan *string, error) {
 
 type bugcrowdScopeEntry struct {
 	Targets []struct {
-		Uri string `json:"uri"`
+		Uri  string `json:"uri"`
 		Name string `json:"name"`
 	} `json:"targets"`
 	InScope bool `json:"inScope"`
@@ -104,9 +104,9 @@ type bugcrowdScopeEntry struct {
 func convertScope(entries []bugcrowdScopeEntry) pbTypes.Scope {
 	var result pbTypes.Scope
 
-	for _, entry := range entries { 
+	for _, entry := range entries {
 		for _, target := range entry.Targets {
-			if ! strings.Contains(target.Uri, target.Name) {
+			if !strings.Contains(target.Uri, target.Name) {
 				continue
 			}
 			ep := pbTypes.NewEndpointFromString(target.Name)
@@ -122,15 +122,14 @@ func convertScope(entries []bugcrowdScopeEntry) pbTypes.Scope {
 }
 
 type bugcrowdProgram struct {
-	Data struct{
+	Data struct {
 		Brief struct {
-			Id string `json:"id"`
+			Id   string `json:"id"`
 			Name string `json:"name"`
 		} `json:"brief"`
 
 		Scope []bugcrowdScopeEntry `json:"scope"`
 	} `json:"data"`
-
 }
 
 type programEndpoints struct {
@@ -194,9 +193,9 @@ func (api *BugcrowdApi) fetchProgram(endpoint string) (pbTypes.Program, error) {
 
 	return pbTypes.Program{
 		PlatformId: bcProg.Data.Brief.Id,
-		Platform: platform,
-		Name: bcProg.Data.Brief.Name,
-		Scope: scope,
+		Platform:   platform,
+		Name:       bcProg.Data.Brief.Name,
+		Scope:      scope,
 	}, nil
 }
 
@@ -230,7 +229,7 @@ func (api *BugcrowdApi) FetchPrograms() (chan *pbTypes.Program, error) {
 
 	go func() error {
 		var ep *string
-		for ep = <- ch; ep != nil; ep = <- ch {
+		for ep = <-ch; ep != nil; ep = <-ch {
 			prg, err := api.fetchProgram(*ep)
 			if err != nil {
 				log.Fatal(err)

@@ -27,7 +27,7 @@ func runBugcrowd(cb programFoundCB) error {
 
 	var prog *pbTypes.Program
 	for {
-		prog = <- progs
+		prog = <-progs
 		if prog == nil {
 			break
 		}
@@ -46,9 +46,9 @@ func prepareCallback(cfg config.Config) (programFoundCB, error) {
 
 	if cfg.Redis != nil {
 		client := redis.NewClient(&redis.Options{
-			Addr: cfg.Redis.Addr,
+			Addr:     cfg.Redis.Addr,
 			Password: cfg.Redis.Password(),
-			DB: cfg.Redis.DB,
+			DB:       cfg.Redis.DB,
 		})
 
 		cb := func(prog pbTypes.Program) error {

@@ -5,13 +5,13 @@
 , ...
 }: buildGoModule rec {
   pname = "program-browser";
-  version = "0.0.4";
+  version = "0.0.5";
 
   src = fetchFromGitHub {
     owner = "m1dugh";
     repo = "program-browser";
     rev = "v${version}";
-    hash = "sha256-eSfXgPHyuQ48gu+RmAcNtBiqvVw3wX3s7sGMxEa5Q1w=";
+    hash = "sha256-UMy+m7V1nGPY8H+mus3ZkxkrWWg/jIpYZ5dF0iB0SZM=";
   };
   vendorHash = "sha256-Afw2gCq4hLv8FG6sBTF0QtymxMOYXPVrawF06UJLUBs=";
 

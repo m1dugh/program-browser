@@ -7,10 +7,10 @@ import (
 )
 
 type redisConfig struct {
-	Addr string `yaml:"address"`
+	Addr              string `yaml:"address"`
 	PlainTextPassword string `yaml:"password"`
-	DB int `yaml:"db"`
-	Name string `yaml:"name"`
+	DB                int    `yaml:"db"`
+	Name              string `yaml:"name"`
 }
 
 type Config struct {
