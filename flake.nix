@@ -14,8 +14,7 @@
   };
 
   outputs =
-    { self
-    , nixpkgs
+    { nixpkgs
     , flake-utils
     , treefmt-nix
     , ...
@@ -34,6 +33,7 @@
       devShells.default = pkgs.mkShell {
         nativeBuildInputs = with pkgs; [
           go
+          goreleaser
         ];
       };
     });

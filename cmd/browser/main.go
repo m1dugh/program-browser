@@ -8,7 +8,9 @@ import (
 	"github.com/m1dugh/program-browser/internal/bugcrowd"
 )
 
-func runBugcrowd() error {
+type programFoundCB func(pbTypes.Program) error
+
+func runBugcrowd(cb programFoundCB) error {
 
 	log.Println("Starting bugcrowd fetching")
 
@@ -25,6 +27,16 @@ func runBugcrowd() error {
 		if prog == nil {
 			break
 		}
+		go cb(*prog)
+	}
+
+	return nil
+}
+
+func main() {
+	log.SetFlags(log.LstdFlags)
+
+	err := runBugcrowd(func(prog pbTypes.Program) error {
 		fmt.Println(prog.Name)
 		fmt.Println("allowed")
 		for _, entry := range prog.Scope.AllowedEndpoints {
@@ -35,15 +47,9 @@ func runBugcrowd() error {
 			fmt.Println(entry)
 		}
 		fmt.Println()
-	}
 
-	return nil
-}
-
-func main() {
-	log.SetFlags(log.LstdFlags)
-
-	err := runBugcrowd()
+		return nil
+	})
 
 	if err != nil {
 		log.Println(err)
