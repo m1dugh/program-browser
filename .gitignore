@@ -1,8 +1,5 @@
 # Editor files
 *.swp
 
-# build files
-results
-bin
-
-dist/
+/dist/
+/config.yaml

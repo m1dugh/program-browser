@@ -14,7 +14,7 @@ type Host struct {
 type Endpoint struct {
 	Scheme *string `json:"scheme"`
 	Host Host `json:"host"`
-	Path *string `json:"path"`
+	Path *string `json:"path,omitempty"`
 }
 
 func NewEndpointFromString(s string) Endpoint {
@@ -89,8 +89,9 @@ type Scope struct {
 }
 
 type Program struct {
-	Id string
-	Scope Scope
-	Name string
-	URL string
+	Platform string `json:"platform"`
+	PlatformId string `json:"platformId"`
+	Scope Scope `json:"scope"`
+	Name string `json:"name"`
+	URL string `json:"URL"`
 }

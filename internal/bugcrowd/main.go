@@ -13,6 +13,8 @@ import (
 	pbTypes "github.com/m1dugh/program-browser/pkg/types"
 )
 
+const platform string = "bugcrowd"
+
 type BugcrowdApi struct {
 	client *http.Client
 	baseURL string
@@ -131,10 +133,6 @@ type bugcrowdProgram struct {
 
 }
 
-func (p *bugcrowdProgram) Id() string {
-	return fmt.Sprintf("bugcrowd/%s", p.Data.Brief.Id)
-}
-
 type programEndpoints struct {
 	BriefApi struct {
 		BriefVersionDocument string `json:"getBriefVersionDocument"`
@@ -195,7 +193,8 @@ func (api *BugcrowdApi) fetchProgram(endpoint string) (pbTypes.Program, error) {
 	scope := convertScope(bcProg.Data.Scope)
 
 	return pbTypes.Program{
-		Id: bcProg.Id(),
+		PlatformId: bcProg.Data.Brief.Id,
+		Platform: platform,
 		Name: bcProg.Data.Brief.Name,
 		Scope: scope,
 	}, nil
