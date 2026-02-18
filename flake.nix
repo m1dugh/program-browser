@@ -1,3 +1,4 @@
+# vim: ts=2 sw=2
 {
   description = "A very basic flake";
 
@@ -14,7 +15,8 @@
   };
 
   outputs =
-    { nixpkgs
+    { self
+    , nixpkgs
     , flake-utils
     , treefmt-nix
     , ...
@@ -26,7 +28,11 @@
       treefmt = treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
     in
     {
-      packages = { };
+      packages = {
+        default = self.outputs.packages.${system}.program-browser;
+
+        program-browser = pkgs.callPackage ./nix/default.nix {};
+      };
 
       formatter = treefmt.config.build.wrapper;
 
