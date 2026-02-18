@@ -1,6 +1,6 @@
 version: 2
 builds:
-  - main: ./cmd/browser/
+  - main: ./cmd/program-browser/
     id: "program-browser"
     binary: program-browser
     env:
