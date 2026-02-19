@@ -5,14 +5,16 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/go-redis/redis"
 	"github.com/m1dugh/program-browser/internal/bugcrowd"
 	"github.com/m1dugh/program-browser/internal/config"
 	pbTypes "github.com/m1dugh/program-browser/pkg/types"
+	"gopkg.in/yaml.v3"
 )
 
-type programFoundCB func(pbTypes.Program) error
+type programFoundCB func(pbTypes.Program)
 
 func runBugcrowd(cb programFoundCB) error {
 
@@ -32,17 +34,15 @@ func runBugcrowd(cb programFoundCB) error {
 			break
 		}
 
-		go func() {
-			if err := cb(*prog); err != nil {
-				log.Print(err)
-			}
-		}()
+		go cb(*prog)
 	}
 
 	return nil
 }
 
 func prepareCallback(cfg config.Config) (programFoundCB, error) {
+
+	var allCallbacks []func(pbTypes.Program) error
 
 	if cfg.Redis != nil {
 		client := redis.NewClient(&redis.Options{
@@ -65,23 +65,54 @@ func prepareCallback(cfg config.Config) (programFoundCB, error) {
 
 			return nil
 		}
-		return cb, nil
+		allCallbacks = append(allCallbacks, cb)
 	}
 
-	return func(prog pbTypes.Program) error {
-		fmt.Println(prog.Name)
-		fmt.Println("allowed")
-		for _, entry := range prog.Scope.AllowedEndpoints {
-			fmt.Println(entry)
-		}
-		fmt.Println("denied")
-		for _, entry := range prog.Scope.DeniedEndpoints {
-			fmt.Println(entry)
-		}
-		fmt.Println()
+	if cfg.File != nil {
+		var err error
+		var target *os.File = os.Stdout
 
-		return nil
-	}, nil
+		if cfg.File.Target != "" {
+			if target, err = os.Create(cfg.File.Target); err != nil {
+				return nil, err
+			}
+		}
+
+		var marshaller func(v any) ([]byte, error) = nil
+
+		switch cfg.File.Format {
+		case "json":
+			marshaller = json.Marshal
+		case "yaml":
+			marshaller = yaml.Marshal
+		default:
+			return nil, fmt.Errorf("Unknown format %s", cfg.File.Format)
+		}
+
+		cb := func(prog pbTypes.Program) error {
+			res, err := marshaller(prog)
+			if err != nil {
+				return err
+			}
+			if _, err = target.Write(res); err != nil {
+				return err
+			}
+			_, err = target.WriteString("\n")
+			return err
+		}
+		allCallbacks = append(allCallbacks, cb)
+	}
+
+	var merged programFoundCB = func(prog pbTypes.Program) {
+
+		for _, cb := range allCallbacks {
+			if err := cb(prog); err != nil {
+				log.Print(err)
+			}
+		}
+	}
+
+	return merged, nil
 }
 
 func main() {

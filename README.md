@@ -43,3 +43,13 @@ The found programs are outputed to a redis queue with the following config.
 | `redis.db` | `int` | `0` | The db number of redis |
 | `redis.name` | `string` | `''` | The name of the queue to output to |
 | `redis.password` | `string` | `REDIS_PASSWORD` environment variable | The password to connect to redis database |
+
+#### File
+
+The found programs are outputed to a file or stdout (by default) using a given
+format
+
+| name | type | default value | description |
+| ---- | ---- | ----          | ---         |
+| `file.format` | `string` | `''` | The format to print to accepted values are `json` and `yaml` |
+| `file.filename` | `string` | `stdout` | The file to output to. |

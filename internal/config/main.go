@@ -13,8 +13,14 @@ type redisConfig struct {
 	Name              string `yaml:"name"`
 }
 
+type fileConfig struct {
+	Format string `yaml:"format"`
+	Target string `yaml:"filename,omitempty"`
+}
+
 type Config struct {
 	Redis *redisConfig `yaml:"redis"`
+	File *fileConfig `yaml:"file"`
 }
 
 func (r redisConfig) Password() string {
