@@ -18,11 +18,12 @@ Here is an example config using redis
 
 ```yaml
 # config.yaml
-redis:
-    address: localhost:6379 # the address of redis
-    db: 0 # the redis db to use
-    name: programs # the name of the queue to push to
-    password: abc # The password for redis. If not set, `REDIS_PASSWORD` env variable is used
+output:
+    redis:
+        address: localhost:6379 # the address of redis
+        db: 0 # the redis db to use
+        name: programs # the name of the queue to push to
+        password: abc # The password for redis. If not set, `REDIS_PASSWORD` env variable is used
 ```
 
 The program can be ran using the following command :
@@ -31,7 +32,55 @@ The program can be ran using the following command :
 go run ./cmd/browser/ -config config.yaml
 ```
 
+Here is a full config with commented parts :
+
+```yaml
+output:
+  # redis:
+  #   address: localhost:6379
+  #   db: 0
+  #   name: foundPrograms
+  #   password: adsfa
+  file:
+    format: json
+    # filename: test.json
+
+input:
+  filters:
+  - glob: '*program1*' # filter by globbing
+    insensitive: true  # case insensitive check
+
+  - regex: '.*program[0-9].*' # filter by regex
+    # insensitive: false
+
+  - exact: 'Program1' # filter by exact name
+    insensitive: true # case insensitive check
+
+  # add extra entries for custom programs
+
+  # extraEntries:
+  # - platform: custom
+  #   platformId: 0110-0111-0110-0111
+  #   scope:
+  #     allowedEndpoints:
+  #     - scheme: https
+  #       host:
+  #         prefix: example.com
+  #         wildcard: true
+  #     deniedEndpoints: []
+  #   name: Moovit Managed Bug Bounty Program
+  #   URL: ""
+
+  # Config for bugcrowd
+  bugcrowd:
+    # Enable bugcrowd provider
+    enable: true
+```
+
 ### Outputs 
+
+Everything in this section must be configured under the `output` section in
+the config file
 
 #### Redis
 
