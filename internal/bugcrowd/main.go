@@ -18,12 +18,17 @@ const platform string = "bugcrowd"
 type BugcrowdApi struct {
 	client  *http.Client
 	baseURL string
+	options *Options
 }
 
-func NewBugcrowdApi() *BugcrowdApi {
+func NewBugcrowdApi(opts *Options) *BugcrowdApi {
+	if opts == nil {
+		opts = DefaultOptions()
+	}
 	return &BugcrowdApi{
 		client:  &http.Client{},
 		baseURL: "https://bugcrowd.com",
+		options: opts,
 	}
 }
 
@@ -41,6 +46,7 @@ func (api *BugcrowdApi) prepareProgramsRequest(req *http.Request, page int) *htt
 type programsResult struct {
 	Engagements []struct {
 		Brief string `json:"briefUrl"`
+		Name string `json:"name"`
 	} `json:"engagements"`
 	Metadata struct {
 		Limit int `json:"limit"`
@@ -83,7 +89,15 @@ func (api *BugcrowdApi) fetchPrograms() (chan *string, error) {
 			}
 
 			for _, val := range programs.Engagements {
-				result <- &val.Brief
+				programValid := len(api.options.Filters) == 0
+
+				for i := 0; i < len(api.options.Filters) && !programValid; i++ {
+					programValid = api.options.Filters[i].CheckName(val.Name)
+				}
+
+				if programValid {
+					result <- &val.Brief
+				}
 			}
 
 		}

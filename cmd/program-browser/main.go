@@ -2,10 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"sync"
 
 	"github.com/go-redis/redis"
 	"github.com/m1dugh/program-browser/internal/bugcrowd"
@@ -16,11 +18,14 @@ import (
 
 type programFoundCB func(pbTypes.Program)
 
-func runBugcrowd(cb programFoundCB) error {
+func runBugcrowd(cfg config.InputConfig, cb programFoundCB) error {
 
 	log.Println("Starting bugcrowd fetching")
 
-	api := bugcrowd.NewBugcrowdApi()
+	opts := bugcrowd.Options{
+		Filters: cfg.Filters,
+	}
+	api := bugcrowd.NewBugcrowdApi(&opts)
 
 	progs, err := api.FetchPrograms()
 	if err != nil {
@@ -40,7 +45,7 @@ func runBugcrowd(cb programFoundCB) error {
 	return nil
 }
 
-func prepareCallback(cfg config.Config) (programFoundCB, error) {
+func prepareCallback(cfg config.OutputConfig) (programFoundCB, error) {
 
 	var allCallbacks []func(pbTypes.Program) error
 
@@ -115,6 +120,38 @@ func prepareCallback(cfg config.Config) (programFoundCB, error) {
 	return merged, nil
 }
 
+func runProviders(cfg config.InputConfig, cb programFoundCB) error {
+
+	var err error = nil
+	var mut sync.Mutex
+	var wg sync.WaitGroup
+
+	if cfg.Bugcrowd != nil {
+		wg.Go(func() {
+			localErr := runBugcrowd(cfg, cb)
+			if err == nil {
+				return
+			}
+
+			mut.Lock()
+			err = errors.Join(err, localErr)
+			mut.Unlock()
+		})
+	}
+
+	if len(cfg.ExtraEntries) > 0 {
+		wg.Go(func() {
+			for _, prog := range cfg.ExtraEntries {
+				cb(prog)
+			}
+		})
+	}
+
+	wg.Wait()
+
+	return err
+}
+
 func main() {
 	log.SetFlags(log.LstdFlags)
 
@@ -129,13 +166,12 @@ func main() {
 		log.Panic(err)
 	}
 
-	cb, err := prepareCallback(cfg)
+	cb, err := prepareCallback(cfg.Output)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	err = runBugcrowd(cb)
-
+	err = runProviders(cfg.Input, cb)
 	if err != nil {
 		log.Println(err)
 	}

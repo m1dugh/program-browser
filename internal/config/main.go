@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 
+	pbTypes "github.com/m1dugh/program-browser/pkg/types"
 	"gopkg.in/yaml.v3"
 )
 
@@ -18,9 +19,29 @@ type fileConfig struct {
 	Target string `yaml:"filename,omitempty"`
 }
 
-type Config struct {
+type OutputConfig struct {
 	Redis *redisConfig `yaml:"redis"`
 	File *fileConfig `yaml:"file"`
+}
+
+type bugcrowdConfig struct {
+	Enable bool `yaml:"enable"`
+}
+
+type InputConfig struct {
+	/// A wildcard filter based on program names
+	Filters []NameFilter `yaml:"filters"`
+
+	/// The Bugcrowd config
+	Bugcrowd *bugcrowdConfig `yaml:"bugcrowd"`
+
+	/// Extra entries of program to push to output
+	ExtraEntries []pbTypes.Program `yaml:"extraEntries"`
+}
+
+type Config struct {
+	Output OutputConfig `yaml:"output"`
+	Input InputConfig `yaml:"input"`
 }
 
 func (r redisConfig) Password() string {
@@ -41,6 +62,10 @@ func NewConfig(configFile string) (Config, error) {
 	var config Config
 	if err := yaml.NewDecoder(file).Decode(&config); err != nil {
 		return Config{}, err
+	}
+
+	for _, filter := range config.Input.Filters {
+		filter.configure()
 	}
 
 	return config, nil
