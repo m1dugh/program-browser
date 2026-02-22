@@ -46,7 +46,7 @@ func (api *BugcrowdApi) prepareProgramsRequest(req *http.Request, page int) *htt
 type programsResult struct {
 	Engagements []struct {
 		Brief string `json:"briefUrl"`
-		Name string `json:"name"`
+		Name  string `json:"name"`
 	} `json:"engagements"`
 	Metadata struct {
 		Limit int `json:"limit"`

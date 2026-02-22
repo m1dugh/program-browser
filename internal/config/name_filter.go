@@ -8,10 +8,10 @@ import (
 )
 
 type NameFilter struct {
-	Exact string `yaml:"exact"`
-	Regex string `yaml:"regex"`
-	Glob string `yaml:"glob"`
-	Insensitive bool `yaml:"insensitive"`
+	Exact       string `yaml:"exact"`
+	Regex       string `yaml:"regex"`
+	Glob        string `yaml:"glob"`
+	Insensitive bool   `yaml:"insensitive"`
 
 	compiledRegex *regexp.Regexp
 }
@@ -19,7 +19,7 @@ type NameFilter struct {
 func (filter *NameFilter) configure() error {
 
 	var err error
-	
+
 	if filter.Insensitive {
 		filter.Regex = strings.ToLower(filter.Regex)
 		filter.Glob = strings.ToLower(filter.Glob)
@@ -47,7 +47,7 @@ func (filter *NameFilter) CheckName(s string) bool {
 	if len(filter.Glob) != 0 {
 		return utils.FnMatch(filter.Glob, s)
 	}
-	
+
 	if len(filter.Exact) != 0 {
 		return filter.Exact == s
 	}

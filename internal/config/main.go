@@ -21,7 +21,7 @@ type fileConfig struct {
 
 type OutputConfig struct {
 	Redis *redisConfig `yaml:"redis"`
-	File *fileConfig `yaml:"file"`
+	File  *fileConfig  `yaml:"file"`
 }
 
 type bugcrowdConfig struct {
@@ -41,7 +41,7 @@ type InputConfig struct {
 
 type Config struct {
 	Output OutputConfig `yaml:"output"`
-	Input InputConfig `yaml:"input"`
+	Input  InputConfig  `yaml:"input"`
 }
 
 func (r redisConfig) Password() string {
