@@ -116,7 +116,10 @@ type bugcrowdScopeEntry struct {
 }
 
 func convertScope(entries []bugcrowdScopeEntry) pbTypes.Scope {
-	var result pbTypes.Scope
+	var result pbTypes.Scope = pbTypes.Scope{
+		AllowedEndpoints: make([]pbTypes.Endpoint, 0),
+		DeniedEndpoints:  make([]pbTypes.Endpoint, 0),
+	}
 
 	for _, entry := range entries {
 		for _, target := range entry.Targets {

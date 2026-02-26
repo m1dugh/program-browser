@@ -7,14 +7,14 @@ import (
 type Scheme string
 
 type Host struct {
-	Suffix   string `json:"prefix"`
+	Suffix   string `json:"suffix"`
 	Wildcard bool   `json:"wildcard"`
 }
 
 type Endpoint struct {
-	Scheme *string `json:"scheme"`
-	Host   Host    `json:"host"`
-	Path   *string `json:"path,omitempty"`
+	Scheme string `json:"scheme,omitempty" yaml:"scheme,omitempty"`
+	Host   Host   `json:"host" yaml:"host"`
+	Path   string `json:"path,omitempty" yaml:"path,omitempty"`
 }
 
 func NewEndpointFromString(s string) Endpoint {
@@ -22,7 +22,7 @@ func NewEndpointFromString(s string) Endpoint {
 	index := strings.Index(s, "://")
 	if index != -1 {
 		protocol := s[:index]
-		res.Scheme = &protocol
+		res.Scheme = protocol
 		s = s[index+3:]
 	}
 
@@ -30,7 +30,7 @@ func NewEndpointFromString(s string) Endpoint {
 
 	if index != -1 {
 		path := s[index+1:]
-		res.Path = &path
+		res.Path = path
 		s = s[:index]
 	}
 
@@ -44,7 +44,7 @@ func NewEndpointFromString(s string) Endpoint {
 }
 
 func (ep *Endpoint) CompatibleWith(pattern *Endpoint) bool {
-	if pattern.Scheme != nil && (ep.Scheme == nil || *pattern.Scheme != *ep.Scheme) {
+	if pattern.Scheme != "" && (ep.Scheme == "" || pattern.Scheme != ep.Scheme) {
 		return false
 	}
 
@@ -58,8 +58,8 @@ func (ep *Endpoint) CompatibleWith(pattern *Endpoint) bool {
 		}
 	}
 
-	if pattern.Path != nil {
-		if ep.Path == nil || !strings.HasPrefix(*ep.Path, *pattern.Path) {
+	if pattern.Path != "" {
+		if ep.Path == "" || !strings.HasPrefix(ep.Path, pattern.Path) {
 			return false
 		}
 	}
@@ -68,30 +68,30 @@ func (ep *Endpoint) CompatibleWith(pattern *Endpoint) bool {
 
 func (ep *Endpoint) ToString() string {
 	var result strings.Builder
-	if ep.Scheme != nil {
-		result.WriteString(string(*ep.Scheme))
+	if ep.Scheme != "" {
+		result.WriteString(ep.Scheme)
 		result.WriteString("://")
 	}
 	if ep.Host.Wildcard {
 		result.WriteString("*.")
 	}
 	result.WriteString(ep.Host.Suffix)
-	if ep.Path != nil {
-		result.WriteString(*ep.Path)
+	if ep.Path != "" {
+		result.WriteString(ep.Path)
 	}
 
 	return result.String()
 }
 
 type Scope struct {
-	AllowedEndpoints []Endpoint `json:"allowedEndpoints"`
-	DeniedEndpoints  []Endpoint `json:"deniedEndpoints"`
+	AllowedEndpoints []Endpoint `json:"allowed_endpoints" yaml:"allowed_endpoints"`
+	DeniedEndpoints  []Endpoint `json:"denied_endpoints" yaml:"denied_endpoints"`
 }
 
 type Program struct {
-	Platform   string `json:"platform"`
-	PlatformId string `json:"platformId"`
-	Scope      Scope  `json:"scope"`
-	Name       string `json:"name"`
-	URL        string `json:"URL"`
+	Platform   string `json:"platform" yaml:"platform"`
+	PlatformId string `json:"platform_id" yaml:"platform_id"`
+	Scope      Scope  `json:"scope" yaml:"scope"`
+	Name       string `json:"name" yaml:"name"`
+	URL        string `json:"url" yaml:"url"`
 }

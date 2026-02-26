@@ -60,16 +60,16 @@ input:
 
   # extraEntries:
   # - platform: custom
-  #   platformId: 0110-0111-0110-0111
+  #   platform_id: 0110-0111-0110-0111
   #   scope:
-  #     allowedEndpoints:
+  #     allowed_endpoints:
   #     - scheme: https
   #       host:
-  #         prefix: example.com
+  #         suffix: example.com
   #         wildcard: true
-  #     deniedEndpoints: []
+  #     denied_endpoints: []
   #   name: Moovit Managed Bug Bounty Program
-  #   URL: ""
+  #   url: ""
 
   # Config for bugcrowd
   bugcrowd:

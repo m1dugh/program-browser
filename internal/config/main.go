@@ -60,7 +60,9 @@ func NewConfig(configFile string) (Config, error) {
 	}
 
 	var config Config
-	if err := yaml.NewDecoder(file).Decode(&config); err != nil {
+	decoder := yaml.NewDecoder(file)
+	decoder.KnownFields(true)
+	if err := decoder.Decode(&config); err != nil {
 		return Config{}, err
 	}
 

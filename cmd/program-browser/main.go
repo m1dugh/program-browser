@@ -126,7 +126,7 @@ func runProviders(cfg config.InputConfig, cb programFoundCB) error {
 	var mut sync.Mutex
 	var wg sync.WaitGroup
 
-	if cfg.Bugcrowd != nil {
+	if cfg.Bugcrowd != nil && cfg.Bugcrowd.Enable {
 		wg.Go(func() {
 			localErr := runBugcrowd(cfg, cb)
 			if err == nil {
